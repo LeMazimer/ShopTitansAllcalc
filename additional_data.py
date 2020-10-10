@@ -90,6 +90,6 @@ ResourceBuildingsTranslationDict: dict = {
     "WeaverMill": "fabric",
     "OilPress": "oils",
     # TODO: fix to ether
-    "EtherWell": "aether",
+    "EtherWell": "ether",
     "JewelStorehouse": "jewels"
 }

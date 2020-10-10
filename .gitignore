@@ -1,3 +1,6 @@
 testing*
 .idea/*
 .~lock.spreadsheet.xlsx#
+result.txt
+result.json
+__pycache__/*

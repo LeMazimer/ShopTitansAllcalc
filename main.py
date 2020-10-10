@@ -99,6 +99,43 @@ class TransformedBPData(Prodict):
     value_per_jewels: float
 
 
+class OutputSpacings(Prodict):
+    # general
+    name: int
+    value_per_minute_per_slot: int
+    # t1
+    iron_per_minute_per_slot: int
+    wood_per_minute_per_slot: int
+    leather_per_minute_per_slot: int
+    herbs_per_minute_per_slot: int
+    # t2
+    steel_per_minute_per_slot: int
+    ironwood_per_minute_per_slot: int
+    fabric_per_minute_per_slot: int
+    oils_per_minute_per_slot: int
+    # t3
+    ether_per_minute_per_slot: int
+    jewels_per_minute_per_slot: int
+
+    # t1
+    value_per_iron: int
+    value_per_wood: int
+    value_per_leather: int
+    value_per_herbs: int
+    # t2
+    value_per_steel: int
+    value_per_ironwood: int
+    value_per_fabric: int
+    value_per_oils: int
+    # t3
+    value_per_ether: int
+    value_per_jewels: int
+
+
+# this has to be true for calculations to work
+assert OutputSpacings().keys() == TransformedBPData().keys()
+
+
 class FinalBPData(Prodict):
     transformed_data: TransformedBP
     calculated_values: TransformedBPData
@@ -198,6 +235,9 @@ class ShopTitansCalculator:
         pass
 
     def __init__(self, config_file: str):
+        # prep result file
+        self.result_file = open("result.txt", "w")
+        # self.result_json = open("result.json", "w")
         # prep player config
         raw_data = json.load(open(config_file))
         try:
@@ -212,6 +252,11 @@ class ShopTitansCalculator:
         self.worker_translation_dict = WorkerTranslationDict(**worker_translation_data)
         # prep calc config
         self.calc_config = self.generate_calc_config()
+
+    def _write(self, msg: str):
+        print(msg)
+        self.result_file.write(f"{msg}\n")
+        return None
 
     @staticmethod
     def generate_data(spreadsheet_file):
@@ -237,53 +282,52 @@ class ShopTitansCalculator:
                 except ValueError:
                     pass
 
-            print(DIVIDER_STRING)
+            self._write(DIVIDER_STRING)
             result.player_craft_times = WorkerCraftTimes()
             for worker, worker_level in self.player_config.workers.items():
                 craft_time = translation_dict[worker_level] * self.player_config.guild_boosts.craft_speed
                 result.player_craft_times.set_attribute(worker, craft_time)
-                print(f"Worker: {worker}, "
-                      f"level: {worker_level}, "
-                      f"craft time coefficient: {round(result.player_craft_times[worker], 2)}")
-            print(DIVIDER_STRING)
+                self._write(f"Worker: {worker}, "
+                            f"level: {worker_level}, "
+                            f"craft time coefficient: {round(result.player_craft_times[worker], 2)}")
+            self._write(DIVIDER_STRING)
 
             regen_dict_data = {
                 "iron": ResourceProductionDict["t1"][self.player_config.buildings.IronMine] *
-                        self.player_config.guild_boosts.resource_generation,
+                self.player_config.guild_boosts.resource_generation,
                 "wood": ResourceProductionDict["t1"][self.player_config.buildings.Lumberyard] *
-                        self.player_config.guild_boosts.resource_generation,
+                self.player_config.guild_boosts.resource_generation,
                 "leather": ResourceProductionDict["t1"][self.player_config.buildings.Tannery] *
-                           self.player_config.guild_boosts.resource_generation,
+                self.player_config.guild_boosts.resource_generation,
                 "herbs": ResourceProductionDict["t1"][self.player_config.buildings.Garden] *
-                         self.player_config.guild_boosts.resource_generation,
-
-                "steel": ResourceProductionDict["t1"][self.player_config.buildings.Smelter] *
-                         self.player_config.guild_boosts.resource_generation,
-                "ironwood": ResourceProductionDict["t1"][self.player_config.buildings.Sawmill] *
-                            self.player_config.guild_boosts.resource_generation,
-                "fabric": ResourceProductionDict["t1"][self.player_config.buildings.WeaverMill] *
-                          self.player_config.guild_boosts.resource_generation,
-                "oils": ResourceProductionDict["t1"][self.player_config.buildings.OilPress] *
-                        self.player_config.guild_boosts.resource_generation,
-
-                "aether": ResourceProductionDict["t1"][self.player_config.buildings.EtherWell] *
-                          self.player_config.guild_boosts.resource_generation,
-                "jewels": ResourceProductionDict["t1"][self.player_config.buildings.JewelStorehouse] *
-                          self.player_config.guild_boosts.resource_generation,
+                self.player_config.guild_boosts.resource_generation,
+                "steel": ResourceProductionDict["t2"][self.player_config.buildings.Smelter] *
+                self.player_config.guild_boosts.resource_generation,
+                "ironwood": ResourceProductionDict["t2"][self.player_config.buildings.Sawmill] *
+                self.player_config.guild_boosts.resource_generation,
+                "fabric": ResourceProductionDict["t2"][self.player_config.buildings.WeaverMill] *
+                self.player_config.guild_boosts.resource_generation,
+                "oils": ResourceProductionDict["t2"][self.player_config.buildings.OilPress] *
+                self.player_config.guild_boosts.resource_generation,
+                "ether": ResourceProductionDict["t3"][self.player_config.buildings.EtherWell] *
+                self.player_config.guild_boosts.resource_generation,
+                "jewels": ResourceProductionDict["t3"][self.player_config.buildings.JewelStorehouse] *
+                self.player_config.guild_boosts.resource_generation,
             }
             regen_values = PlayerRegenerationValues(**regen_dict_data)
             result.set_attribute("player_regen_values", regen_values)
             for building, building_level in self.player_config.buildings.items():
-                print(f"Building {building}, "
-                      f"level: {building_level}, "
-                      f"regen rate: {round(result.player_regen_values[ResourceBuildingsTranslationDict[building]], 2)}")
-            print(DIVIDER_STRING)
+                self._write(
+                    f"Building {building}, "
+                    f"level: {building_level}, "
+                    f"regen rate: {round(result.player_regen_values[ResourceBuildingsTranslationDict[building]], 2)}"
+                )
+            self._write(DIVIDER_STRING)
 
             return result
         except ValueError:
-            traceback.print_exc(
-
-            )
+            traceback.print_exc()
+            self.result_file.close()
             self.data_not_generated()
 
     def calculate(self):
@@ -306,7 +350,7 @@ class ShopTitansCalculator:
             "oils",
             "fabric",
             # TODO: fix to ether
-            "aether",
+            "ether",
             "jewels"
         ]
         assert False not in [x.lower() == x for x in special_base_keys]
@@ -338,10 +382,7 @@ class ShopTitansCalculator:
                     if value == "---":
                         continue
                     try:
-                        if key.lower() == "aether":
-                            transformed_bp.set_attribute("ether", value)
-                        else:
-                            transformed_bp.set_attribute(key.lower(), value)
+                        transformed_bp.set_attribute(key.lower(), value)
                     except ValueError:
                         pass
                 elif key.lower() in special_base_keys:
@@ -388,7 +429,7 @@ class ShopTitansCalculator:
         for transformed_bp in transformed_bps:
             # get value, calculate profit
             value = transformed_bp.value
-
+            profit = value
             # in mins
             craft_time = transformed_bp.crafting_time / 60
             # resources
@@ -445,8 +486,56 @@ class ShopTitansCalculator:
                     calculated_values=calculated_data
                 )
             )
+        spacings = OutputSpacings(
+            # general
+            name=30,
+            value_per_minute_per_slot=40,
+            profit_per_minute_per_slot=40,
+            # t1
+            iron_per_minute_per_slot=40,
+            wood_per_minute_per_slot=40,
+            leather_per_minute_per_slot=40,
+            herbs_per_minute_per_slot=40,
+            # t2
+            steel_per_minute_per_slot=40,
+            ironwood_per_minute_per_slot=40,
+            fabric_per_minute_per_slot=40,
+            oils_per_minute_per_slot=40,
+            # t3
+            ether_per_minute_per_slot=40,
+            jewels_per_minute_per_slot=40,
+            # t1
+            value_per_iron=40,
+            value_per_wood=40,
+            value_per_leather=40,
+            value_per_herbs=40,
+            # t2
+            value_per_steel=40,
+            value_per_ironwood=40,
+            value_per_fabric=40,
+            value_per_oils=40,
+            # t3
+            value_per_ether=40,
+            value_per_jewels=40
+        )
+        header = str()
+        for key, spacing in spacings.items():
+            key = key.replace("_per_", "/")
+            header += key.center(spacing) + "|"
+        self._write(
+            msg=header
+        )
+        for bp in final_data_list:
+            write_line = str()
+            for key, spacing in spacings.items():
+                current_key_value = bp.calculated_values.get(key)
+                if isinstance(current_key_value, float):
+                    current_key_value = round(current_key_value, 3)
+                write_line += str(current_key_value).center(spacing) + "|"
+            # input(json.dumps(final_data_list, indent=4))
+            self._write(msg=write_line)
 
-        input(json.dumps(final_data_list, indent=4))
+        self.result_file.close()
 
     @staticmethod
     def _round(value):
