@@ -8,7 +8,7 @@ It does the following:
 1. Parses data from the spreadsheet into JSON files - done
 2. Parses blueprints, applies all ascension and mastery upgrades - done
 3. Calculates data depending on the passed config file - done
-4. Applies component costs for accurate profit margins - WIP  
+4. Applies component costs for accurate profit margins - WIP
 
 
 Installation
@@ -16,7 +16,9 @@ Installation
 1. Install [python 3.7](https://www.python.org/downloads/) or later
 2. run the following:
 
-`python3.7 main.py --config config.json --spreadsheet spreadsheet.xlsx --generate-data`
+`python3.7 main.py --generate-data`
+
+this command will take a while, even upwards of a minute. You will be notified when it is finished.
 
 3. You can now generate results with:
 
@@ -27,11 +29,14 @@ You will get `result.json` and `result.txt` that are appropriately calculated to
 TODO:
 
 - Add support for permanent guild resource boosts that came with the t10 patch
+- Add support for quest component costs
+- Add support for non-quest component costs
+- Add support for ascension tree bonuses
 - Better output: preferably as a website that's generated instead of a json and txt file
 
 NOTES:
 
-The spreadsheet does NOT work out-of-the-box. The file that is
+The official spreadsheet does NOT work out-of-the-box. The file that is
 in the repository is already modified.
 
 Steps that need to be taken for it to be compatible (use [Libre Office](https://www.libreoffice.org/) if you do 
@@ -45,5 +50,10 @@ with these:
 
 ![Step 2](images/spreadsheet_modification_step_2.png)
 
+Change the component headers to the following:
+
+![Step 3](images/spreadsheet_modification_step_3.png)
+
 2. Save as `.xlsx` (Libre Office can do this, just use the older
 format when it prompts you to do so)
+

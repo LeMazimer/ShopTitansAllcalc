@@ -59,7 +59,7 @@
     "Element": 0,
     "Spirit": 0
   },
-  "component_prices": {
+  "quest_component_prices": {
     "Elven Wood": 1000,
     "Iron Pine Cone": 1100,
     "Glow Shroom": 1200,
@@ -87,5 +87,6 @@
     "Crystal Lullaby": 150000,
     "Precious Shell": 158000
   },
+  "non_quest_component_prices": {},
   "max_energy": 2550
 }
